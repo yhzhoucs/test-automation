@@ -1,0 +1,149 @@
+diff --git a/apps/Makefile b/apps/Makefile
+index 819ae7e..b998939 100644
+--- a/apps/Makefile
++++ b/apps/Makefile
+@@ -45,19 +45,25 @@ COMMON= ligra.h graph.h compressedVertex.h vertex.h utils.h IO.h parallel.h gett
+ 
+ ALL= encoder decoder BFS BC BellmanFord Components Components-Shortcut Radii PageRank PageRankDelta BFSCC BFS-Bitvector KCore MIS Triangle CF
+ 
+-all: $(ALL)
++BUILD_DIR = ../build/apps
++
++all: $(BUILD_DIR) $(ALL)
++
++$(BUILD_DIR):
++	mkdir -p $(BUILD_DIR)
+ 
+ % : %.C $(COMMON)
+-	$(PCC) $(PCFLAGS) -o $@ $<
++	$(PCC) $(PCFLAGS) -o $(BUILD_DIR)/$@ $<
+ 
+ $(COMMON):
+ 	ln -s ../ligra/$@ .
+ 
+ .PHONY : clean
+ 
+-clean :
+-	rm -f *.o $(ALL)
++clean:
++	rm -f *.o $(BUILD_DIR)/*
++	rmdir $(BUILD_DIR) || true
+ 
+-cleansrc :
++cleansrc:
+ 	rm -f *.o $(ALL)
+ 	rm $(COMMON)
+diff --git a/apps/PageRank.C b/apps/PageRank.C
+index c40d438..0d9f334 100644
+--- a/apps/PageRank.C
++++ b/apps/PageRank.C
+@@ -83,6 +83,7 @@ void Compute(graph<vertex>& GA, commandLine P) {
+   vertexSubset Frontier(n,n,frontier);
+   
+   long iter = 0;
++  long long total_edge_visited = 0;
+   while(iter++ < maxIters) {
+     edgeMap(GA,Frontier,PR_F<vertex>(p_curr,p_next,GA.V),0, no_output);
+     vertexMap(Frontier,PR_Vertex_F(p_curr,p_next,damping,n));
+@@ -92,9 +93,20 @@ void Compute(graph<vertex>& GA, commandLine P) {
+       }}
+     double L1_norm = sequence::plusReduce(p_curr,n);
+     if(L1_norm < epsilon) break;
++
++    for (int i{}; i < n; ++i) {
++      if (Frontier.isIn(i)) {
++        total_edge_visited += GA.V[i].getOutDegree();
++      }
++    }
++
+     //reset p_curr
+     vertexMap(Frontier,PR_Vertex_Reset(p_curr));
+     swap(p_curr,p_next);
+   }
++  
++  std::cout << "Total Iteration: " << iter << std::endl;
++  std::cout << "Total Edge Visted: " << total_edge_visited << std::endl;
++
+   Frontier.del(); free(p_curr); free(p_next); 
+ }
+diff --git a/apps/PageRankDelta.C b/apps/PageRankDelta.C
+index 3d8aaab..13bdc92 100644
+--- a/apps/PageRankDelta.C
++++ b/apps/PageRankDelta.C
+@@ -109,6 +109,7 @@ void Compute(graph<vertex>& GA, commandLine P) {
+   vertexSubset All(n,n,all); //all vertices
+ 
+   long round = 0;
++  long long total_edge_visited = 0;
+   while(round++ < maxIters) {
+     edgeMap(GA,Frontier,PR_F<vertex>(GA.V,Delta,nghSum),GA.m/20, no_output | dense_forward);
+     vertexSubset active 
+@@ -120,10 +121,21 @@ void Compute(graph<vertex>& GA, commandLine P) {
+       nghSum[i] = fabs(Delta[i]); }}
+     double L1_norm = sequence::plusReduce(nghSum,n);
+     if(L1_norm < epsilon) break;
++
++    for (int i{}; i < n; ++i) {
++      if (Frontier.isIn(i)) {
++        total_edge_visited += GA.V[i].getOutDegree();
++      }
++    }
++
+     //reset
+     vertexMap(All,PR_Vertex_Reset(nghSum));
+     Frontier.del();
+     Frontier = active;
+   }
++
++  std::cout << "Total Iteration: " << round << std::endl;
++  std::cout << "Total Edge Visted: " << total_edge_visited << std::endl;
++  
+   Frontier.del(); free(p); free(Delta); free(nghSum); All.del();
+ }
+diff --git a/ligra/utils.h b/ligra/utils.h
+index 648888f..82898bf 100644
+--- a/ligra/utils.h
++++ b/ligra/utils.h
+@@ -26,6 +26,7 @@
+ #include <iostream>
+ #include <fstream>
+ #include <stdlib.h>
++#include <cinttypes>
+ #include "parallel.h"
+ using namespace std;
+ 
+diff --git a/utils/Makefile b/utils/Makefile
+index ff71785..37035fa 100644
+--- a/utils/Makefile
++++ b/utils/Makefile
+@@ -29,18 +29,25 @@ COMMON = utils.h parseCommandLine.h parallel.h quickSort.h blockRadixSort.h tran
+ LOCAL_COMMON = graphIO.h
+ GENERATORS = rMatGraph gridGraph randLocalGraph SNAPtoAdj wghSNAPtoAdj adjGraphAddWeights adjToBinary communityToHyperAdj hyperAdjToBinary adjHypergraphAddWeights randHypergraph KONECTtoHyperAdj KONECTtoClique communityToClique communityToMESH KONECTtoMESH
+ 
++BUILD_DIR = ../build/utils
++
+ .PHONY: all clean
+-all: $(GENERATORS)
++all: $(BUILD_DIR) $(GENERATORS)
++
++$(BUILD_DIR):
++	mkdir -p $(BUILD_DIR)
+ 
+ $(COMMON):
+ 	ln -s ../ligra/$@ .
+ 
+ % : %.C $(COMMON) $(LOCAL_COMMON)
+-	$(PCC) $(PCFLAGS) -o $@ $<
++	$(PCC) $(PCFLAGS) -o $(BUILD_DIR)/$@ $<
+ 
+-clean :
+-	rm -f *.o $(GENERATORS)
++clean:
++	rm -f *.o $(BUILD_DIR)/*
++	rmdir $(BUILD_DIR) || true
+ 
+ cleansrc :
+ 	make -s clean
+ 	rm -f $(COMMON)
++	
+\ No newline at end of file

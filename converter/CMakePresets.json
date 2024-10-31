@@ -1,0 +1,22 @@
+{
+    "version": 2,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "ci-base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/out/build/${presetName}"
+        },
+        {
+            "name": "ci-ninja",
+            "displayName": "Ninja setup",
+            "description": "setup ninja as generator",
+            "inherits": "ci-base",
+            "generator": "Ninja"
+        }
+    ]
+}
