@@ -11,7 +11,7 @@
 
 ### 1. 运行准备脚本
 
-```shell
+```bash
 chmod +x prepare.sh
 ./prepare.sh
 ```
@@ -24,7 +24,7 @@ chmod +x prepare.sh
 
 ### 3. 执行脚本，等待输出
 
-```shell
+```bash
 python scripts/autorun.py
 ```
 
@@ -32,7 +32,7 @@ python scripts/autorun.py
 
 ## 生成图并测试步骤
 
-```shell
+```bash
 # 查看命令使用方法
 python scripts/gen.py -h
 
@@ -105,7 +105,7 @@ python scripts/gen.py 18 0.77 0.04 0.02
 
 ### 3. 编译项目
 
-```shell
+```bash
 # 在 convert 目录下
 cmake --list-presets
 
@@ -126,7 +126,7 @@ cmake --build --preset converter
 
 ### 4. 执行转换
 
-```shell
+```bash
 ./out/path/to/your/executable
 
 # 如果是上面的 CMakeUserPresets.json
