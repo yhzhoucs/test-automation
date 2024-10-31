@@ -4,7 +4,7 @@ ROOT_DIR="$(pwd)"
 LIGRA_DIR="$ROOT_DIR/ligra"
 PATCH_FILE="$ROOT_DIR/fix.patch"
 
-# 并行编译的线程数
+# 并发编译的线程数
 BUILD_THREADS_NUM=10
 
 # 拉取 Ligra 代码

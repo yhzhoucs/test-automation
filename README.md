@@ -22,7 +22,9 @@ chmod +x prepare.sh
 ./prepare.sh
 ```
 
-这个脚本会拉取 ligra 的代码会执行 patch 修改它
+这个脚本会拉取 ligra 的代码，执行 patch 修改它，最后编译出可执行文件
+
+可以修改 prepare.sh 脚本中的 `BUILD_THREADS_NUM` 来控制编译的线程数
 
 ### 2. 修改生成/测试的配置
 
