@@ -39,11 +39,13 @@ except OSError as e:
 
 
 def log(s):
+    print(s)
     global log_file
     log_file.write(s + '\n')
     log_file.flush()
 
 def logf(formatter, *args, **kwargs):
+    print(formatter.format(*args, **kwargs))
     global log_file
     log_file.write(formatter.format(*args, **kwargs))
     log_file.write('\n')
