@@ -9,6 +9,12 @@
 
 ## 自动搜寻图步骤
 
+### 0. 拉取本仓库
+
+```bash
+git clone https://github.com/yhzhoucs/test-automation.git
+```
+
 ### 1. 运行准备脚本
 
 ```bash
