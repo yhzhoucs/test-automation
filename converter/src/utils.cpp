@@ -22,35 +22,22 @@ gtool::Graph<Node> from_simulator(std::string const &row_ptr_path, std::string c
     in.open(column_path, std::ios::in);
     std::copy(std::istream_iterator<int>(in), std::istream_iterator<int>(), std::back_inserter(column));
 
-    std::ofstream out("temp.txt", std::ios::out | std::ios::trunc);
-    out << "# vertex_number edge_number directed_edge_number" << std::endl;
-    out << "# " << row_ptr.size() - 1 << " " << row_ptr.back() << std::endl;
+    std::vector<std::pair<Node, Node>> el;
+    el.reserve(row_ptr.back());
+
     for (auto u : std::views::iota(0ul, row_ptr.size() - 1)) {
         auto from = row_ptr[u];
         auto to = row_ptr[u + 1];
         for ( ; from < to; ++from) {
-            out << u << " " << column[from] << "\n";
+            el.emplace_back(u, column[from]);
         }
     }
-    out.flush();
-    out.close();
 
-    gtool::Builder<Node> builder("temp.txt", true, false);
-    gtool::Graph<Node> graph;
-    {
-        auto raw = builder.build_csr();
-        graph = gtool::simplify_graph(raw);
-    }
-
-    namespace fs = std::filesystem;
-    fs::remove("temp.txt");
-
-    return graph;
+    return gtool::build_graph_from_edgelist<Node>(el);
 }
 
 gtool::Graph<Node> from_edgelist(std::string const &edgelist_path, bool symmetrize) {
-    gtool::Builder<Node> builder(edgelist_path, true, symmetrize);
-    return builder.build_csr();
+    return gtool::build_graph_from_file<Node>(edgelist_path, symmetrize);
 }
 
 gtool::Graph<Node> from_ligra(std::string const &ligra_graph_path, bool symmetrize) {
@@ -65,44 +52,31 @@ gtool::Graph<Node> from_ligra(std::string const &ligra_graph_path, bool symmetri
     long long vn{}, en{};
     in >> vn >> en;
 
-    for (Node tmp{}; auto n : std::views::iota(0, vn)) {
-        in >> tmp;
-        row_ptr.emplace_back(tmp);
-    }
+    std::copy_n(std::istream_iterator<int>(in), vn, std::back_inserter(row_ptr));
     row_ptr.emplace_back(en);
 
     std::vector<int> column;
     column.reserve(en);
 
-    for (Node tmp{}; auto n : std::views::iota(0, en)) {
-        in >> tmp;
-        column.emplace_back(tmp);
-    }
+    std::copy_n(std::istream_iterator<int>(in), en, std::back_inserter(column));
 
-    std::ofstream out("temp.txt", std::ios::out | std::ios::trunc);
-    out << "# vertex_number edge_number directed_edge_number" << std::endl;
-    out << "# " << row_ptr.size() - 1 << " " << row_ptr.back() << std::endl;
+    std::vector<std::pair<Node, Node>> el;
+    el.reserve(row_ptr.back());
+
     for (auto u : std::views::iota(0ul, row_ptr.size() - 1)) {
         auto from = row_ptr[u];
         auto to = row_ptr[u + 1];
         for ( ; from < to; ++from) {
-            out << u << " " << column[from] << "\n";
+            el.emplace_back(u, column[from]);
         }
     }
-    out.flush();
-    out.close();
 
-    gtool::Builder<Node> builder("temp.txt", true, symmetrize);
-    gtool::Graph<Node> graph;
-    {
-        auto raw = builder.build_csr();
-        graph = gtool::simplify_graph(raw);
+    if (symmetrize) {
+        return gtool::build_graph_from_edgelist<Node>(gtool::symmetrize_edgelist(el));
+    } else {
+        return gtool::build_graph_from_edgelist<Node>(el);
     }
 
-    namespace fs = std::filesystem;
-    fs::remove("temp.txt");
-
-    return graph;
 }
 
 void to_simulator(gtool::Graph<Node> const &g, std::string const &row_ptr_path, std::string const &column_path) {

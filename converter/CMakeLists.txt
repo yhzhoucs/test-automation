@@ -13,8 +13,8 @@ cmake_policy(SET CMP0135 NEW)
 include(FetchContent)
 FetchContent_Declare(
         gtool
-        URL https://github.com/yhzhoucs/graph-tool/releases/download/v0.1.0/gtool-0.1.0-win64.tar.gz
-        URL_HASH MD5=5AAB4B1149610578FDC4D4952DE49080
+        URL https://github.com/yhzhoucs/graph-tool/releases/download/v0.1.2/gtool-0.1.2-Linux.tar.gz
+        URL_HASH MD5=577484751E337C16A50C228EBDD32EC1
 )
 FetchContent_MakeAvailable(gtool)
 
