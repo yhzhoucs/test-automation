@@ -41,9 +41,6 @@ gtool::Graph<Node> from_edgelist(std::string const &edgelist_path, bool symmetri
 }
 
 gtool::Graph<Node> from_ligra(std::string const &ligra_graph_path, bool symmetrize) {
-    std::vector<int> row_ptr;
-    row_ptr.reserve(10000);
-
     std::ifstream in(ligra_graph_path, std::ios::in);
     std::string line;
     std::getline(in, line);
@@ -52,6 +49,8 @@ gtool::Graph<Node> from_ligra(std::string const &ligra_graph_path, bool symmetri
     long long vn{}, en{};
     in >> vn >> en;
 
+    std::vector<int> row_ptr;
+    row_ptr.reserve(vn + 1);
     std::copy_n(std::istream_iterator<int>(in), vn, std::back_inserter(row_ptr));
     row_ptr.emplace_back(en);
 
@@ -63,7 +62,7 @@ gtool::Graph<Node> from_ligra(std::string const &ligra_graph_path, bool symmetri
     std::vector<std::pair<Node, Node>> el;
     el.reserve(row_ptr.back());
 
-    for (auto u : std::views::iota(0ul, row_ptr.size() - 1)) {
+    for (auto u : std::views::iota(0, vn)) {
         auto from = row_ptr[u];
         auto to = row_ptr[u + 1];
         for ( ; from < to; ++from) {

@@ -12,11 +12,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 cmake_policy(SET CMP0135 NEW)
 include(FetchContent)
 FetchContent_Declare(
-        gtool
-        URL https://github.com/yhzhoucs/graph-tool/releases/download/v0.1.2/gtool-0.1.2-Linux.tar.gz
-        URL_HASH MD5=577484751E337C16A50C228EBDD32EC1
+    gtool
+    URL https://github.com/yhzhoucs/graph-tool/releases/download/v0.1.2/gtool-0.1.2-Linux.tar.gz
+    URL_HASH MD5=577484751E337C16A50C228EBDD32EC1
 )
-FetchContent_MakeAvailable(gtool)
+FetchContent_Declare(
+    cxxopts
+    GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
+    GIT_TAG v3.2.0
+)
+FetchContent_MakeAvailable(gtool cxxopts)
 
 set(SOURCES src/utils.cpp)
 
@@ -31,6 +36,8 @@ if (gtool_FOUND)
 else ()
     message(FATAL_ERROR "The essential library `gtool` is not found.")
 endif ()
+
+target_link_libraries(converter PRIVATE cxxopts::cxxopts)
 
 target_compile_definitions(converter PRIVATE
     PROJECT_ROOT_PATH="${PROJECT_SOURCE_DIR}")
