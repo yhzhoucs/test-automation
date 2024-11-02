@@ -64,13 +64,7 @@ python scripts/gen.py 18 0.77 0.04 0.02
 
 ## 转换图格式步骤
 
-### 1. 进入 converter/src/main.cpp 目录下修改代码
-
-一般来说，只要写两行代码
-- 从文件中读取图： from_xxx 函数
-- 把图写入另一种格式的文件： to_xxx 函数
-
-### 2. 写你的 CMakeUserPresets.json
+### 1. 写你的 CMakeUserPresets.json
 
 可参考：
 
@@ -111,7 +105,26 @@ python scripts/gen.py 18 0.77 0.04 0.02
 "CMAKE_CXX_COMPILER": "$env{HOME}/local/bin/g++"
 ```
 
-### 3. 编译项目
+**P.S.** 如果不想用 Ninja 建构，你也可以指定如 Unix Makefiles 之类的构建器
+
+```json
+{
+    "name": "x64-debug",
+    "displayName": "x64 Debug",
+    "description": "debug build for x64 arch",
+    "inherits": "ci-base",
+    "generator": "Unix Makefiles",
+    "architecture": {
+        "value": "x64",
+        "strategy": "external"
+    },
+    "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+    }
+}
+```
+
+### 2. 编译项目
 
 ```bash
 # 在 convert 目录下
@@ -132,12 +145,37 @@ cmake --preset x64-debug
 cmake --build --preset converter
 ```
 
-### 4. 执行转换
+### 3. 执行转换
+
+执行 converter 并输入参数，格式如下：
+
+```
+converter <mode> [-s] -i <file1[,file2]> -o <file1[,file2]>
+converter <mode> [-s] -i <file1> [-i file2] -o <file1> [-o file2]
+converter <mode> [-s] --input <file1[,file2]> --output <file1[,file2]>
+```
+
+mode 为转换模式，有下面几个选择
+- `e2l` ：边表到 Ligra
+- `e2s` ：边表到模拟器，此时 -o 要指定两个文件名，前一个是偏移，后一个是边
+- `l2e` ：Ligra 到边表
+- `l2s` ：Ligra 到模拟器，同样 -o 要指定两个文件名
+- `s2e` ：模拟器到边表，此时 -i 要指定两个文件名，前一个是偏移，后一个是边
+- `s2l` ：模拟器到 Ligra ，同样 -i 要指定两个文件名
+
+如果指定 `-s` 那么对于每条边，添加它的反向边
 
 ```bash
-./out/path/to/your/executable
+# 查看使用指南
+converter --help
 
-# 如果是上面的 CMakeUserPresets.json
-# 那么执行
-./out/build/x64-debug/converter
+# 下面是几个示例
+# 将 Ligra 格式转化为模拟器格式
+# -o 后面的两个文件名间不能有空格，用逗号隔开
+./converter l2s -i ./dataset/ligra.txt -o ./output/row_ptr,./output/column 
+# 等效于
+./converter l2s -i ./dataset/ligra.txt -o ./output/row_ptr -o ./output/column
+
+# 将边表格式转化为 Ligra 格式
+./converter e2l -i ./dataset/soc-Slashdot0811.txt -o ./output/ligra.txt
 ```

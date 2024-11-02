@@ -18,14 +18,15 @@ int main(int argc, char *argv[]) {
 
     // edgelist, ligra, simulator
 
-    cxxopts::Options options("Converter", "A simple graph format converter");
+    cxxopts::Options options("converter", "A simple graph format converter");
     options.add_options()
         ("mode",
             "Converting mode, one of e2l,e2s,l2e,l2s,s2e,s2l (e: edgelist, l: ligra, s: simulator)",
             cxxopts::value<std::string>())
         ("s,symmetrize", "Symmetrize edgelist")
         ("i,input", "Input file path(s)", cxxopts::value<std::vector<std::string>>())
-        ("o,output", "Output file path(s)", cxxopts::value<std::vector<std::string>>());
+        ("o,output", "Output file path(s)", cxxopts::value<std::vector<std::string>>())
+        ("h,help", "Print usage");
     
     options.parse_positional({"mode"});
     auto result = options.parse(argc, argv);
