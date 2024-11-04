@@ -59,12 +59,16 @@ python scripts/gen.py 18 0.77 0.04 0.02
 ## 准备
 
 - cmake 3.20.0 及以上
-- ninja
-- g++
+- ninja 【可选】
+- g++10 及以上
 
 ## 转换图格式步骤
 
-### 1. 写你的 CMakeUserPresets.json
+### 1. 编译
+
+#### 1.1 使用 CMakePresets【推荐】
+
+首先写你的 CMakeUserPresets.json 文件
 
 可参考：
 
@@ -73,16 +77,16 @@ python scripts/gen.py 18 0.77 0.04 0.02
     "version": 2,
     "configurePresets": [
         {
-            "name": "x64-debug",
-            "displayName": "x64 Debug",
-            "description": "debug build for x64 arch",
+            "name": "x64-release",
+            "displayName": "x64 Release",
+            "description": "build for x64 arch",
             "inherits": "ci-ninja",
             "architecture": {
                 "value": "x64",
                 "strategy": "external"
             },
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_C_COMPILER": "$env{HOME}/local/bin/gcc",
                 "CMAKE_CXX_COMPILER": "$env{HOME}/local/bin/g++"
             }
@@ -91,7 +95,7 @@ python scripts/gen.py 18 0.77 0.04 0.02
     "buildPresets": [
         {
             "name": "converter",
-            "configurePreset": "x64-debug",
+            "configurePreset": "x64-release",
             "targets": ["converter"]
         }
     ]
@@ -109,9 +113,9 @@ python scripts/gen.py 18 0.77 0.04 0.02
 
 ```json
 {
-    "name": "x64-debug",
-    "displayName": "x64 Debug",
-    "description": "debug build for x64 arch",
+    "name": "x64-release",
+    "displayName": "x64 Release",
+    "description": "build for x64 arch",
     "inherits": "ci-base",
     "generator": "Unix Makefiles",
     "architecture": {
@@ -119,12 +123,12 @@ python scripts/gen.py 18 0.77 0.04 0.02
         "strategy": "external"
     },
     "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_BUILD_TYPE": "Release",
     }
 }
 ```
 
-### 2. 编译项目
+然后就可以使用 Presets 编译项目了：
 
 ```bash
 # 在 convert 目录下
@@ -141,11 +145,23 @@ cmake --build --preset <preset-name>
 
 # 如果是用上面提供的 CMakeUserPresets.json
 # 那么运行的命令依次为
-cmake --preset x64-debug
+cmake --preset x64-release
 cmake --build --preset converter
 ```
 
-### 3. 执行转换
+#### 1.2 直接用 cmake
+
+或者不使用 CMakePresets ，而是用 CMake 命令构建：
+
+```bash
+# 在 convert 目录下
+cmake -S . -B build -G "Ninja Multi-Config" # 使用 Ninja
+# cmake -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release # 使用 cmake
+
+cmake --build build --config "Release" # 使用 Ninja Multi-Config 配置
+```
+
+### 2. 执行转换
 
 执行 converter 并输入参数，格式如下：
 
