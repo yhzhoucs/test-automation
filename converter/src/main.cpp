@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
     for (auto const &path : output_paths) {
-        if (!fs::exists(fs::path(path).parent_path())) {
+        if (!fs::path(path).parent_path().empty() && !fs::exists(fs::path(path).parent_path())) {
             fs::create_directories(fs::path(path).parent_path());
         }
     }
